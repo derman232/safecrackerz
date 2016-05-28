@@ -2,17 +2,24 @@
 
 ; global vars
 .dseg
-
+RightBtnStatus:                 ; button debouncing status
+    .byte 1
+LeftBtnStatus:
+    .byte 1
+RightBtnCounter:                ; counters for debouncing
+    .byte 2
+LeftBtnCounter:
+    .byte 2
 
 .cseg
 .org 0
     jmp RESET
-    jmp RIGHT_BUTTON            ; PB0 to INT0 (RDX4), right button
-    jmp LEFT_BUTTON             ; PB1 to INT1 (RDX3), left button
-;.org OVF0addr
-;    jmp TIMER0OVF               ; Timer interrupts
-;.org OVF1addr
-;    jmp TIMER1OVF
+    jmp pushbutton_right        ; PB0 to INT0 (RDX4), right button
+    jmp pushbutton_left         ; PB1 to INT1 (RDX3), left button
+.org OVF0addr
+    jmp timer0_interrupt       ; Timer interrupts
+.org OVF1addr
+    jmp DEFAULT
 .org 0x0072
 DEFAULT:
     reti                        ; Interrupts that aren't handled
@@ -21,6 +28,7 @@ DEFAULT:
 .include "sleep.asm"
 .include "lcd.asm"
 .include "pushbutton.asm"
+.include "timer.asm"
 .include "interrupt.asm"
 
 RESET:
@@ -34,6 +42,7 @@ RESET:
     call lcd_init
     call pushbutton_init
     call interrupt_init
+    call timer_init
 
 START_SCREEN:
     lcd_printstr "2121 16s1"
@@ -41,12 +50,6 @@ START_SCREEN:
     lcd_printstr "Safe Cracker"
 
     rjmp halt       ; wait for button press
-
-RIGHT_BUTTON:
-    lcd_clear
-
-LEFT_BUTTON:
-    lcd_clear
 
 HALT:
     rjmp HALT
