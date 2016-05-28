@@ -29,6 +29,11 @@
     do_lcd_command (0b10000000 | (@0 * 0b01000000))
 .endmacro
 
+.macro lcd_clear
+	do_lcd_command 0b00000001 ; clear display
+    do_lcd_command 0b10000000 ; set cursor to top corner
+.endmacro
+
 lcd_init:
 	ser r16
 	out DDRF, r16
