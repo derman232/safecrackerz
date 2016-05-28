@@ -2,3 +2,8 @@
 *.hex
 .*.swp
 .DS_Store
+
+*.bat
+*.tmp
+*.map
+*.obj
