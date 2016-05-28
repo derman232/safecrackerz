@@ -1,0 +1,4 @@
+*.aws
+*.hex
+.*.swp
+.DS_Store
