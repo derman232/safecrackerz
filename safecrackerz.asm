@@ -30,6 +30,10 @@ LoseState:                      ; Boolean to determine if game is lost
     .byte 1
 StartedState:                   ; Boolean to determine if game has been started
     .byte 1
+RandNums:                       ; 3 random numbers
+    .byte 3
+RoundNum:                       ; Current round
+    .byte 1
 
 
 .cseg
@@ -44,6 +48,7 @@ StartedState:                   ; Boolean to determine if game has been started
 .org 0x0072
 DEFAULT:
     reti                        ; Interrupts that aren't handled
+CharacterMap: .db "0123456789*#ABCD"
 
 .include "avr200.asm"
 .include "macros.asm"
@@ -55,6 +60,7 @@ DEFAULT:
 .include "interrupt.asm"
 .include "pot.asm"
 .include "lightbar.asm"
+.include "keypad.asm"
 
 RESET:
     ; clear variables
@@ -75,6 +81,10 @@ SOFT_RESET:
     clear8 CounterDirection
     clear8 LoseState
     clear8 StartedState
+    clear8 RandNums
+    clear8 RandNums+1
+    clear8 RandNums+2
+    clear8 RoundNum
     clear16 RandomNum
     clear16 FindPotNum
     clr r16
@@ -91,6 +101,7 @@ SOFT_RESET:
     call interrupt_init
     call timer_init
     call pot_init
+    call keypad_init
 
 
 START_SCREEN:
@@ -188,15 +199,15 @@ FIND_POT_SCREEN:
     jmp FIND_POT_SCREEN_loop
 
 
-;FIND_POT_SCREEN_exit:
-;    jmp TIMEOUT_SCREEN
+FIND_POT_SCREEN_exit:
+    jmp TIMEOUT_SCREEN
 
 FIND_POT_SCREEN_loop:
 
     ; check countdown 
     load_val8_reg r19, SecondCounter
     cpi r19, 0
-    breq_long TIMEOUT_SCREEN
+    breq FIND_POT_SCREEN_exit
 
     lcd_set_line_1
     lcd_printstr "Remaining : "
