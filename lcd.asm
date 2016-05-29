@@ -79,9 +79,11 @@ lcd_init:
 	do_lcd_command 0b00000110 ; increment, no display shift
     do_lcd_command 0b00001100 ; Cursor off, bar, no blink
 
+    ; set Port E as output
+    ser r16
+    out DDRE, r16
     ; turn on the LCD backlight (PE5)
     ldi r16, 0b00001000
-    out DDRE, r16
     out PORTE, r16
 
     pop r16

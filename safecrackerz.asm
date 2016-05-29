@@ -20,6 +20,8 @@ TimerCounter2:                  ; Also the number of ticks from Timer 1, but res
     .byte 2
 RandomNum:                      ; Random num between 0 - 1024, generated from timer0 ticks
     .byte 2
+RandomNum8:                     ; Random num between 0 - 255 inclusive, generated from timer0 ticks
+    .byte 1
 FindPotNum:                     ; Desired POT setting for user to find
     .byte 2
 SecondCounter:                  ; Number of Seconds that have passed
@@ -85,8 +87,12 @@ SOFT_RESET:
     clear8 RandNums+1
     clear8 RandNums+2
     clear8 RoundNum
+    clear8 RandomNum8
     clear16 RandomNum
     clear16 FindPotNum
+    clear8 KeypadCurval
+    clear8 KeypadUpdates
+
     clr r16
     clr r17
 
@@ -248,7 +254,19 @@ FIND_CODE_SCREEN:
     lcd_set_line 1
     lcd_printstr "Scan for number"
 
-    rjmp HALT
+    rcall set_rand_char
+
+    rjmp FIND_CODE_SCREEN_loop
+
+FIND_CODE_SCREEN_loop:
+    rcall keypad_getkey
+    rcall keypad_get_val_motor
+    cpi r16, 0
+    breq FIND_CODE_SCREEN_loop
+
+    ;lcd_printchar_reg r16
+    rjmp FIND_CODE_SCREEN_loop
+
 
 TEST_TEST:
     lcd_clear

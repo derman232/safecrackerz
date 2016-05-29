@@ -26,6 +26,7 @@ timer0_interrupt:                  ; interrupt subroutine for Timer0
         push XL
 
     random_num:
+        inc8 RandomNum8
         inc16 RandomNum
         load_16 RandomNum
         cpi XL, low(MAX_RAND)

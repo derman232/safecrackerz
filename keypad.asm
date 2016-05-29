@@ -193,7 +193,10 @@ keypad_get_val_end:
 
 keypad_get_val_motor:
     keypad_get_val_motor_debouncer: 
-        lds r16, RandChar
+        lds r16, RandNums
+        lcd_set_line_1
+        lcd_printchar_reg r16
+
         lds r17, KeypadCurval
         cp r16, r17
         brne kepad_get_val_motor_debouncer_continue
@@ -227,6 +230,10 @@ set_rand_char:
 	push zh
 	push zl
 	
+    lds r16, RandomNum8
+    ldi r17, 16
+    rcall Divide
+
 	ldi zh, HIGH(CharacterMap<<1)
 	ldi zl, LOW(CharacterMap<<1)
 	add zl, r16
@@ -235,16 +242,17 @@ set_rand_char:
 
 	lpm r17, z
 
+    ; store result in RandNums + RoundNum
     load_Z RandNums
     lds r16, RoundNum
 	add zl, r16
 	clr r16
 	adc zh, r16
+    st Z, r17
 
-    lcd_clear
+    lcd_set_line 0
     lcd_printchar_reg r17
 
-    st Z, r17
 	
 set_rand_char_end:
     pop zl
