@@ -44,8 +44,7 @@ pot_read:
 ;    ;lcd_set_line 0
 ;    rjmp INTERRUPT
 
-; X: contains the target
-; r25:r24: contains the current reading (which is moved to Y)
+; paramters: X, contins the target pot reading
 FIND_POT_SCREEN_readpot:
     push xh
     push xl

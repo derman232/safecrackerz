@@ -1,14 +1,18 @@
 ; Functions to control the LCD 
 
 .macro do_lcd_command
+    push r16
 	ldi r16, @0
 	rcall lcd_command
 	rcall lcd_wait
+    pop r16
 .endmacro
 .macro do_lcd_data
+    push r16
 	ldi r16, @0
 	rcall lcd_data
 	rcall lcd_wait
+    pop r16
 .endmacro
 
 ; print line from next String
@@ -22,8 +26,8 @@
     load_Z (T << 1)
     rcall lcd_show_str
 
-    pop ZH
     pop ZL
+    pop ZH
 .endmacro
 
 ; print one character from a specified register
@@ -56,6 +60,7 @@
 .endmacro
 
 lcd_init:
+    push r16
 	ser r16
 	out DDRF, r16
 	out DDRA, r16
@@ -79,6 +84,7 @@ lcd_init:
     out DDRE, r16
     out PORTE, r16
 
+    pop r16
     ret
 
 .equ LCD_RS = 7

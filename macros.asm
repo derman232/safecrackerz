@@ -15,16 +15,7 @@
 
 .macro load_val8_reg
     lds @0, @1
-    ;push XL
-    ;push XH
-
-    ;load_X @1
-    ;ld @0, X
-    ;st X, @0
-
-    ;pop XH
-    ;pop XL
-.endmacro
+ .endmacro
 
 ; Clear a 2-byte word in memory
 .macro clear16
@@ -143,7 +134,7 @@ FALSE:
 .endmacro
 
 .macro brlt_long
-    brlt FALSE
+    brge FALSE
     rjmp @0
 FALSE:
 .endmacro

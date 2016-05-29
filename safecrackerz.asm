@@ -1,7 +1,8 @@
 .include "m2560def.inc"
 ;http://www.avrfreaks.net/forum/tutasmcode-morons-guide-avr-adc
 
-.equ SCREEN_TIMEOUT = 3
+.equ SCREEN_TIMEOUT_START = 1
+.equ SCREEN_TIMEOUT = 19
 
 ; global vars
 .dseg
@@ -53,6 +54,7 @@ DEFAULT:
 .include "pushbutton.asm"
 .include "interrupt.asm"
 .include "pot.asm"
+.include "lightbar.asm"
 
 RESET:
     ; clear variables
@@ -109,7 +111,7 @@ START_COUNTDOWN_SCREEN:
     lcd_printstr "2121 16s1"
     lcd_set_line 1
 
-    ldi r16, SCREEN_TIMEOUT
+    ldi r16, SCREEN_TIMEOUT_START
     rcall timer_reset_countdown
 
 START_COUNTDOWN_SCREEN_loop:
@@ -126,14 +128,16 @@ START_COUNTDOWN_SCREEN_loop:
     rjmp START_COUNTDOWN_SCREEN_loop
 
 RESET_POT_SCREEN:
+    ldi r16, SCREEN_TIMEOUT
+    rcall timer_reset_countdown
+RESET_POT_SCREEN_softreset:
+    rcall lightbar_clear
+
     lcd_clear
     lcd_printstr "Reset POT to 0"
     lcd_set_line_1
 
-    ldi r16, SCREEN_TIMEOUT
-    rcall timer_reset_countdown
-
-    ; reset counter if pot is not zero
+    ; reset counter for if pot is not zero
     rcall timer_reset_countup_2
 
 
@@ -154,7 +158,7 @@ RESET_POT_SCREEN_loop:
     cpc r25, r16
     breq RESET_POT_SCREEN_wait
 
-    ; reset counter if pot is not zero
+    ; reset counter for checking whether pot is at zero for 500milli
     rcall timer_reset_countup_2
 
     rjmp RESET_POT_SCREEN_loop
@@ -172,53 +176,74 @@ RESET_POT_SCREEN_exit:
     jmp TIMEOUT_SCREEN
 
 FIND_POT_SCREEN:
+    ; counter for checking whether pot is at target for 1sec
+    rcall timer_reset_countup_2
+
     lcd_clear
     lcd_printstr "Find POT Pos"
     lcd_set_line_1
     load_val16_X RandomNum
     store16_X FindPotNum
-    load_val16_X FindPotNum
+
     jmp FIND_POT_SCREEN_loop
 
-FIND_POT_SCREEN_exit:
-    jmp TIMEOUT_SCREEN
+
+;FIND_POT_SCREEN_exit:
+;    jmp TIMEOUT_SCREEN
 
 FIND_POT_SCREEN_loop:
+
     ; check countdown 
-    ;load_val8_reg r16, SecondCounter
-    ;cpi r16, 0
-    ;breq FIND_POT_SCREEN_exit
-
-    rcall FIND_POT_SCREEN_readpot
-
-    ;rcall FIND_POT_SCREEN_setlightbar
+    load_val8_reg r19, SecondCounter
+    cpi r19, 0
+    breq_long TIMEOUT_SCREEN
 
     lcd_set_line_1
     lcd_printstr "Remaining : "
-    lcd_print8 r18       ; yl should be 0 - 63 inclusive
+    lcd_print8 r19       ; yl should be 0 - 63 inclusive
+    lcd_printstr " "     ; clear trailing character
 
-    rjmp FIND_POT_SCREEN_loop
+    load_val16_X FindPotNum
+    rcall FIND_POT_SCREEN_readpot
+
+    rcall FIND_POT_SCREEN_setlightbar
+
     ; check if pot has gone past target
-    ;cpi r16, 0
-    ;brlt TEST_TEST
-    ;brlt_long TEST_TEST
+    cpi r18, 0
+    brlt_long RESET_POT_SCREEN_softreset
 
-    ;cpi r16, 0
-    ;brne FIND_POT_SCREEN_loop
+    cpi r18, 0
+    breq FIND_POT_SCREEN_wait
 
-    ;lcd_printstr "Remaining : "
-    ;lcd_print8 r16
-    ;lcd_set_line_1
+    ; reset counter for if pot is not on target and try again
+    rcall timer_reset_countup_2
+    jmp FIND_POT_SCREEN_loop
 
-    jmp FIND_CODE_SCREEN
+
+FIND_POT_SCREEN_wait:
+    load_val16_X TimerCounter2
+    cpi XL, LOW(ONE_SEC_16*1)
+    ldi r18, HIGH(ONE_SEC_16*1)
+    cpc XH, r18
+    breq FIND_CODE_SCREEN
+
+    jmp FIND_POT_SCREEN_loop
+
+FIND_CODE_SCREEN:
+    rcall lightbar_clear
+    lcd_clear
+
+    lcd_printstr "Position found!"
+    lcd_set_line 1
+    lcd_printstr "Scan for number"
+
+    rjmp HALT
 
 TEST_TEST:
     lcd_clear
     lcd_printstr "rekt"
-    rjmp HALT
-
-FIND_CODE_SCREEN:
-    lcd_clear
+    lcd_set_line_1
+    lcd_print8 r18
     rjmp HALT
 
 TIMEOUT_SCREEN:
