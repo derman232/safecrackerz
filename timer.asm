@@ -1,4 +1,5 @@
-.set DEBOUNCE_TIME = 780*1.5    ; ~150milliseconds
+.set DEBOUNCE_TIME = 780*5    ; ~150milliseconds
+.set ONE_SEC_16 = 30
 
 timer_init:
     push r16
@@ -24,7 +25,7 @@ timer0_interrupt:                  ; interrupt subroutine for Timer0
         push XL
 
     right_btn_debouncer:
-        load8_reg r16, RightBtnStatus
+        load_val8_reg r16, RightBtnStatus
         cpi r16, 0
         breq left_btn_debouncer       ; Skip to left button
 
@@ -41,7 +42,7 @@ timer0_interrupt:                  ; interrupt subroutine for Timer0
         clear16 RightBtnCounter
 
     left_btn_debouncer:
-        load8_reg r16, LeftBtnStatus
+        load_val8_reg r16, LeftBtnStatus
         cpi r16, 0
         breq timer0_epilogue      ; skip to end 
 
@@ -63,3 +64,77 @@ timer0_interrupt:                  ; interrupt subroutine for Timer0
         pop XL
 
         reti
+
+timer1_interrupt:
+    timer1_prologue:
+        push r16
+        push XH
+        push XL
+
+    timer1_main:
+        inc16 TimerCounter
+
+        ;lds XL, TimerCounter
+        ;lds XH, TimerCounter+1
+        ;load_val16_X TimerCounter
+        ;adiw x, 1
+        ;store16_X TimerCounter
+
+        load_16 TimerCounter
+        cpi XL, low(ONE_SEC_16)
+        ldi r16, high(ONE_SEC_16)
+        cpc XH, r16
+        brlo timer1_epilogue              ; if (count < ONE_SEC) then NotSecond
+
+        clear16 TimerCounter
+
+        ; increment or decrement counter, per counter direction
+        load_val8_reg r16, CounterDirection
+        cpi r16, 0
+        breq timer1_countUP
+        timer1_countDOWN:
+            dec8 SecondCounter
+            rjmp timer1_epilogue
+        timer1_countUP:
+            inc8 SecondCounter
+
+    timer1_epilogue:
+        pop r16
+        pop XH
+        pop XL
+
+        reti
+
+timer_reset_countup:
+    push r16
+    clear16 TimerCounter
+    clear8 SecondCounter
+
+    ; set counter to count UP
+    ldi r16, 0
+    load_X CounterDirection
+    st X, r16
+
+    pop r16
+    reti
+
+timer_reset_countdown:
+    push XH
+    push XL
+    push r16
+
+    clear16 TimerCounter
+    load_X SecondCounter
+    st X, r16
+
+    ; set counter to count DOWN
+    ldi r16, 1
+    load_X CounterDirection
+    st X, r16
+
+    pop r16
+    pop XL
+    pop XH
+    reti
+
+

@@ -10,6 +10,8 @@
 	rcall lcd_data
 	rcall lcd_wait
 .endmacro
+
+; print line from next String
 .macro lcd_printstr
     .set T = PC     
     .db @0, 0       ; add null terminator to string
@@ -24,10 +26,29 @@
     pop ZL
 .endmacro
 
+; print one character from a specified register
+.macro lcd_printchar_reg
+    push r16
+	mov r16, @0
+	rcall lcd_data
+	rcall lcd_wait
+    pop r16
+.endmacro
+
 ; set lcd line using @0
 .macro lcd_set_line
-    do_lcd_command (0b10000000 | (@0 * 0b01000000))
+    do_lcd_command (0b10000000 | (@0 * 0x40))
 .endmacro
+
+.macro lcd_set_line_1
+    do_lcd_command 0b11000000
+.endmacro
+
+; set cursor location using @0, @1
+.macro lcd_set_cursor
+    do_lcd_command (0b10000000 | (@0 * 0x40) | (@1 & 0x3F))
+.endmacro
+
 
 .macro lcd_clear
 	do_lcd_command 0b00000001 ; clear display
@@ -127,3 +148,33 @@ lcd_show_str_END:
     ret
 
 
+.macro lcd_print8
+    push r16
+    push r17
+	mov r16, @0
+
+	lcd_print_10s:
+		cpi r16, 10
+		brlo lcd_print_1s
+		clr r17
+		lcd_print_loop_10s:
+			cpi r16, 10
+			brlo display_10s
+
+			inc r17
+			subi r16, 10
+
+			rjmp lcd_print_loop_10s
+
+		display_10s:
+            subi r17, -'0'
+			lcd_printchar_reg r17
+			rjmp lcd_print_1s
+
+	lcd_print_1s:
+		subi r16, -'0'
+        lcd_printchar_reg r16
+		
+    pop r17
+    pop r16
+.endmacro
