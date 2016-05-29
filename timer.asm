@@ -1,5 +1,6 @@
 .set DEBOUNCE_TIME = 780*5    ; ~150milliseconds
 .set ONE_SEC_16 = 30
+.set MAX_RAND = 1024
 
 timer_init:
     push r16
@@ -23,6 +24,17 @@ timer0_interrupt:                  ; interrupt subroutine for Timer0
         push r16
         push XH
         push XL
+
+    random_num:
+        inc16 RandomNum
+        load_16 RandomNum
+        cpi XL, low(MAX_RAND)
+        ldi r16, high(MAX_RAND)
+        cpc XH, r16
+        brlt right_btn_debouncer
+
+        random_num_clear:
+            clear16 RandomNum
 
     right_btn_debouncer:
         load_val8_reg r16, RightBtnStatus
@@ -59,9 +71,9 @@ timer0_interrupt:                  ; interrupt subroutine for Timer0
         clear16 LeftBtnCounter
 
     timer0_epilogue:
-        pop r16
-        pop XH
         pop XL
+        pop XH
+        pop r16
 
         reti
 
@@ -73,6 +85,7 @@ timer1_interrupt:
 
     timer1_main:
         inc16 TimerCounter
+        inc16 TimerCounter2
 
         ;lds XL, TimerCounter
         ;lds XH, TimerCounter+1
@@ -99,14 +112,16 @@ timer1_interrupt:
             inc8 SecondCounter
 
     timer1_epilogue:
-        pop r16
-        pop XH
         pop XL
+        pop XH
+        pop r16
 
         reti
 
 timer_reset_countup:
     push r16
+    push XH
+    push XL
     clear16 TimerCounter
     clear8 SecondCounter
 
@@ -115,8 +130,18 @@ timer_reset_countup:
     load_X CounterDirection
     st X, r16
 
+    pop XL
+    pop XH
     pop r16
     reti
+
+timer_reset_countup_2:
+    push r16
+    clear16 TimerCounter2
+
+    pop r16
+    reti
+
 
 timer_reset_countdown:
     push XH

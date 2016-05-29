@@ -134,3 +134,16 @@
     pop XL
     pop XH
 .endmacro
+
+
+.macro breq_long
+    brne FALSE
+    rjmp @0
+FALSE:
+.endmacro
+
+.macro brlt_long
+    brlt FALSE
+    rjmp @0
+FALSE:
+.endmacro

@@ -153,28 +153,162 @@ lcd_show_str_END:
     push r17
 	mov r16, @0
 
-	lcd_print_10s:
+	lcd_print8_10s:
 		cpi r16, 10
-		brlo lcd_print_1s
+		brlo lcd_print8_1s
 		clr r17
-		lcd_print_loop_10s:
+		lcd_print8_loop_10s:
 			cpi r16, 10
-			brlo display_10s
+			brlo display8_10s
 
 			inc r17
 			subi r16, 10
 
-			rjmp lcd_print_loop_10s
+			rjmp lcd_print8_loop_10s
 
-		display_10s:
+		display8_10s:
             subi r17, -'0'
 			lcd_printchar_reg r17
-			rjmp lcd_print_1s
+			rjmp lcd_print8_1s
 
-	lcd_print_1s:
+	lcd_print8_1s:
 		subi r16, -'0'
         lcd_printchar_reg r16
 		
     pop r17
     pop r16
+.endmacro
+
+.macro lcd_print16
+    push xh
+    push xl
+    push yh
+    push yl
+    push r16
+    push r17
+	mov xh, @0
+	mov xl, @1
+    clr yh
+    clr yl
+    clr r16
+
+	lcd_print16_10000s:
+        clr r17
+		cpi xl, LOW(10000)
+        ldi r16, HIGH(10000)
+        cpc xh, r16
+		brlo display16_10000s
+
+		lcd_print16_loop_10000s:
+
+            cpi xl, LOW(10000)
+            ldi r16, HIGH(10000)
+            cpc xh, r16
+			brlo display16_10000s
+
+			inc r17
+
+            mov r16, XL                     ; decrement parameter by 10000
+            subi r16, low(10000)
+            mov XL, r16
+            mov r16, XH
+            sbci r16, high(10000)
+            mov XH, r16
+
+			rjmp lcd_print16_loop_10000s
+
+		display16_10000s:
+            subi r17, -'0'
+			lcd_printchar_reg r17
+			rjmp lcd_print16_1000s
+
+	lcd_print16_1000s:
+        clr r17
+		cpi xl, LOW(1000)
+        ldi r16, HIGH(1000)
+        cpc xh, r16
+		brlo display16_1000s
+
+		lcd_print16_loop_1000s:
+
+            cpi xl, LOW(1000)
+            ldi r16, HIGH(1000)
+            cpc xh, r16
+			brlo display16_1000s
+
+			inc r17
+
+            mov r16, XL                     ; decrement parameter by 1000
+            subi r16, low(1000)
+            mov XL, r16
+            mov r16, XH
+            sbci r16, high(1000)
+            mov XH, r16
+
+			rjmp lcd_print16_loop_1000s
+
+		display16_1000s:
+            subi r17, -'0'
+			lcd_printchar_reg r17
+			rjmp lcd_print16_100s
+
+	lcd_print16_100s:
+        clr r17
+		cpi xl, LOW(100)
+        ldi r16, HIGH(100)
+        cpc xh, r16
+		brlo display16_100s
+
+		lcd_print16_loop_100s:
+            cpi xl, LOW(100)
+            ldi r16, HIGH(100)
+            cpc xh, r16
+			brlo display16_100s
+
+			inc r17
+
+            mov r16, XL                     ; decrement parameter by 1000
+            subi r16, low(100)
+            mov XL, r16
+            mov r16, XH
+            sbci r16, high(100)
+            mov XH, r16
+
+			rjmp lcd_print16_loop_100s
+
+		display16_100s:
+            subi r17, -'0'
+			lcd_printchar_reg r17
+			rjmp lcd_print16_10s
+
+
+	lcd_print16_10s:
+        clr r17
+		cpi xl, 10
+		brlo display16_10s
+		lcd_print16_loop_10s:
+			cpi xl, 10
+			brlo display16_10s
+
+			inc r17
+			subi xl, 10
+
+			rjmp lcd_print16_loop_10s
+
+		display16_10s:
+            subi r17, -'0'
+			lcd_printchar_reg r17
+			rjmp lcd_print16_1s
+
+	lcd_print16_1s:
+		subi xl, -'0'
+        lcd_printchar_reg xl
+		
+    pop r17
+    pop r16
+    pop yl
+    pop yh
+    pop xl
+    pop xh
+
 .endmacro

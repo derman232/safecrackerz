@@ -15,6 +15,12 @@ LeftBtnCounter:
     .byte 2
 TimerCounter:                   ; Number of ticks from Timer 1
     .byte 2
+TimerCounter2:                  ; Also the number of ticks from Timer 1, but reset independently
+    .byte 2
+RandomNum:                      ; Random num between 0 - 1024, generated from timer0 ticks
+    .byte 2
+FindPotNum:                     ; Desired POT setting for user to find
+    .byte 2
 SecondCounter:                  ; Number of Seconds that have passed
     .byte 1
 CounterDirection:               ; Boolean to determine if should countup or countdown
@@ -38,7 +44,9 @@ StartedState:                   ; Boolean to determine if game has been started
 DEFAULT:
     reti                        ; Interrupts that aren't handled
 
+.include "avr200.asm"
 .include "macros.asm"
+.include "math.asm"
 .include "sleep.asm"
 .include "lcd.asm"
 .include "timer.asm"
@@ -65,21 +73,22 @@ SOFT_RESET:
     clear8 CounterDirection
     clear8 LoseState
     clear8 StartedState
+    clear16 RandomNum
+    clear16 FindPotNum
     clr r16
     clr r17
 
-
-
-    ; TODO remove this (or make it useful?)
-       ser r16
-       out DDRC, r16           ; set LED bar
+    ; TODO move to function
+    ser r16
+    out DDRC, r16           ; set LED bar
+    out DDRG, r16           ; set LED bar
 
     ; init devices
     call lcd_init
     call pushbutton_init
     call interrupt_init
     call timer_init
-    ;call pot_init
+    call pot_init
 
 
 START_SCREEN:
@@ -124,24 +133,93 @@ RESET_POT_SCREEN:
     ldi r16, SCREEN_TIMEOUT
     rcall timer_reset_countdown
 
+    ; reset counter if pot is not zero
+    rcall timer_reset_countup_2
+
 
 RESET_POT_SCREEN_loop:
-    ; check pot
-    ;rcall pot_read
-
     ; check countdown 
     load_val8_reg r16, SecondCounter
     cpi r16, 0
-    breq TIMEOUT_SCREEN
+    breq RESET_POT_SCREEN_exit
 
     lcd_printstr "Remaining : "
     lcd_print8 r16
     lcd_set_line_1
 
+    ; check pot is zero
+    rcall pot_read
+    cpi r24, 0
+    ldi r16, 0
+    cpc r25, r16
+    breq RESET_POT_SCREEN_wait
+
+    ; reset counter if pot is not zero
+    rcall timer_reset_countup_2
+
     rjmp RESET_POT_SCREEN_loop
+
+RESET_POT_SCREEN_wait:
+    load_val16_X TimerCounter2
+    cpi XL, LOW(ONE_SEC_16*0.5)
+    ldi r16, HIGH(ONE_SEC_16*0.5)
+    cpc XH, r16
+    breq FIND_POT_SCREEN
+
+    rjmp RESET_POT_SCREEN_loop
+
+RESET_POT_SCREEN_exit:
+    jmp TIMEOUT_SCREEN
 
 FIND_POT_SCREEN:
     lcd_clear
+    lcd_printstr "Find POT Pos"
+    lcd_set_line_1
+    load_val16_X RandomNum
+    store16_X FindPotNum
+    load_val16_X FindPotNum
+    jmp FIND_POT_SCREEN_loop
+
+FIND_POT_SCREEN_exit:
+    jmp TIMEOUT_SCREEN
+
+FIND_POT_SCREEN_loop:
+    ; check countdown 
+    ;load_val8_reg r16, SecondCounter
+    ;cpi r16, 0
+    ;breq FIND_POT_SCREEN_exit
+
+    rcall FIND_POT_SCREEN_readpot
+
+    ;rcall FIND_POT_SCREEN_setlightbar
+
+    lcd_set_line_1
+    lcd_printstr "Remaining : "
+    lcd_print8 r18       ; yl should be 0 - 63 inclusive
+
+    rjmp FIND_POT_SCREEN_loop
+    ; check if pot has gone past target
+    ;cpi r16, 0
+    ;brlt TEST_TEST
+    ;brlt_long TEST_TEST
+
+    ;cpi r16, 0
+    ;brne FIND_POT_SCREEN_loop
+
+    ;lcd_printstr "Remaining : "
+    ;lcd_print8 r16
+    ;lcd_set_line_1
+
+    jmp FIND_CODE_SCREEN
+
+TEST_TEST:
+    lcd_clear
+    lcd_printstr "rekt"
+    rjmp HALT
+
+FIND_CODE_SCREEN:
+    lcd_clear
+    rjmp HALT
 
 TIMEOUT_SCREEN:
     lcd_clear
