@@ -5,12 +5,15 @@ pushbutton_init:
     out DDRD, r16           ; set PORT D as input
 
     pop r16
-    reti
+    ret
 
 pushbutton_left:
     push XL
     push XH
     push r16
+    in r16, SREG
+    push r16
+
     load_val8_reg r16, RightBtnStatus
     cpi r16, 1
     breq pushbutton_left_end      ; skip if debouncing
@@ -35,17 +38,26 @@ pushbutton_left:
 
     pushbutton_left_end:
         pop r16
+        out SREG, r16
+        pop r16
         pop XH
         pop XL
 
         reti
 
 pushbutton_right:
+    push r16
+    in r16, SREG
+    push r16
+
     ; test if game is over and reset
     rcall check_game_over
     cpi r16, 1
     breq RESET_GAME
 
+    pop r16
+    out SREG, r16
+    pop r16
     reti
 
 
@@ -56,16 +68,16 @@ check_game_over:
     breq game_ongoing
     game_lost:
         ldi r16, 1
-        reti
+        ret
 
     game_ongoing:
         clr r16
-        reti
+        ret
 
 ; check if game is started
 check_game_started:
     load_val8_reg r16, StartedState
-    reti
+    ret
 
 RESET_GAME:
     rjmp SOFT_RESET

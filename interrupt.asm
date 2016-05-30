@@ -9,5 +9,5 @@ interrupt_init:
 
     sei         ; enable interrupts
 
-    reti
+    ret
 

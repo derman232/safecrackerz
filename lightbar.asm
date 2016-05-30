@@ -6,5 +6,5 @@ lightbar_clear:
     out PORTG, r16
 
     pop r16
-    reti
+    ret
 

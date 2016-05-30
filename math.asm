@@ -17,7 +17,7 @@ Divide_end:
     mov r17, r18 ; move division result to r17
 
     pop r18
-    reti
+    ret
 
 ; divide 16-bit Y/Z
 ; division result in Y
@@ -52,7 +52,7 @@ Divide16:
     pop drem16uH
     pop drem16uL
 
-    reti
+    ret
 
 
 Multiply:
@@ -72,4 +72,4 @@ Multiply_loop:
 Multiply_end:
     pop r17
     pop r18
-    reti
+    ret

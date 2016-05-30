@@ -16,7 +16,7 @@ timer_init:
     sts TIMSK1, r16
 
     pop r16
-    reti
+    ret
 
 
 timer0_interrupt:                  ; interrupt subroutine for Timer0
@@ -24,6 +24,8 @@ timer0_interrupt:                  ; interrupt subroutine for Timer0
         push r16
         push XH
         push XL
+;        in r16, SREG
+;        push r16
 
     random_num:
         inc8 RandomNum8
@@ -72,17 +74,21 @@ timer0_interrupt:                  ; interrupt subroutine for Timer0
         clear16 LeftBtnCounter
 
     timer0_epilogue:
+;        pop r16
+;        out SREG, r16
         pop XL
         pop XH
         pop r16
-
         reti
+
 
 timer1_interrupt:
     timer1_prologue:
         push r16
         push XH
         push XL
+;        in r16, SREG
+;        push r16
 
     timer1_main:
         inc16 TimerCounter
@@ -113,6 +119,8 @@ timer1_interrupt:
             inc8 SecondCounter
 
     timer1_epilogue:
+;        pop r16
+;        out SREG, r16
         pop XL
         pop XH
         pop r16
@@ -134,18 +142,20 @@ timer_reset_countup:
     pop XL
     pop XH
     pop r16
+    ;ret
     reti
 
 timer_reset_countup_2:
     clear16 TimerCounter2
 
+    ;ret
     reti
 
 
 timer_reset_countdown:
+    push r16
     push XH
     push XL
-    push r16
 
     clear16 TimerCounter
     load_X SecondCounter
@@ -156,9 +166,10 @@ timer_reset_countdown:
     load_X CounterDirection
     st X, r16
 
-    pop r16
     pop XL
     pop XH
+    pop r16
+    ;ret
     reti
 
 

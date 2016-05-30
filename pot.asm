@@ -11,7 +11,7 @@ pot_init:
     sts ADCSRA,r16
 
     pop r16
-    reti
+    ret
 
 
 ; reads ADCL and ADCH and stores
@@ -33,7 +33,7 @@ pot_read:
     rcall sleep_5ms
 
     pop r16
-    reti
+    ret
 
 ;    cpi r16, 0
 ;    ldi r16, 0
@@ -113,7 +113,7 @@ FIND_POT_SCREEN_readpot_end:
     pop yh
     pop xl
     pop xh
-    reti
+    ret
 
 
 ; set the lightbar according to the value in yl
@@ -157,7 +157,7 @@ FIND_POT_SCREEN_setlightbar:
     pop r18
     pop r17
     pop r16
-    reti
+    ret
 
 
 

@@ -36,6 +36,12 @@ RandNums:                       ; 3 random numbers
     .byte 3
 RoundNum:                       ; Current round
     .byte 1
+KeypadCurval:
+    .byte 1
+KeypadUpdates:
+    .byte 1
+RandChar:
+    .byte 1
 
 
 .cseg
@@ -113,6 +119,16 @@ SOFT_RESET:
 START_SCREEN:
     lcd_printstr "2121 16s1"
     lcd_set_line 1
+
+;loop_test:
+;    rcall keypad_getkey
+;    rcall keypad_getval
+;    cpi r18, 0
+;    breq loop_test
+;    ;lcd_printchar_reg r16
+;
+;    rjmp loop_test
+
     lcd_printstr "Safe Cracker"
 
     rjmp HALT       ; wait for button press
@@ -254,17 +270,18 @@ FIND_CODE_SCREEN:
     lcd_set_line 1
     lcd_printstr "Scan for number"
 
-    rcall set_rand_char
+    ;rcall set_rand_char
+    lcd_set_line 1
 
     rjmp FIND_CODE_SCREEN_loop
 
 FIND_CODE_SCREEN_loop:
     rcall keypad_getkey
-    rcall keypad_get_val_motor
-    cpi r16, 0
+    rcall keypad_getval
+    cpi r18, 0
     breq FIND_CODE_SCREEN_loop
+    lcd_printchar_reg r18
 
-    ;lcd_printchar_reg r16
     rjmp FIND_CODE_SCREEN_loop
 
 
