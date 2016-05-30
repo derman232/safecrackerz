@@ -3,7 +3,8 @@
 
 .equ SCREEN_TIMEOUT_START = 1
 .equ SCREEN_TIMEOUT = 19
-.equ MAX_ROUNDS = 3
+.equ MAX_ROUNDS = 2
+.equ STROBE_LIGHT = 0b00000010
 
 ; global vars
 .dseg
@@ -33,8 +34,8 @@ LoseState:                      ; Boolean to determine if game is lost
     .byte 1
 StartedState:                   ; Boolean to determine if game has been started
     .byte 1
-RandNums:                       ; 3 random numbers
-    .byte 3
+RandNums:                       ; random number for each round
+    .byte 10
 RoundNum:                       ; Current round
     .byte 1
 KeypadCurval:
@@ -70,6 +71,7 @@ CharacterMap: .db "0123456789*#ABCD"
 .include "pot.asm"
 .include "lightbar.asm"
 .include "keypad.asm"
+.include "pwm.asm"
 
 RESET:
     ; clear variables
@@ -108,6 +110,9 @@ SOFT_RESET:
     out DDRC, r16           ; set LED bar
     out DDRG, r16           ; set LED bar
 
+    ;ldi r16, 0b00000100
+    ;out PORTG, r16
+
     ; init devices
     call lcd_init
     call pushbutton_init
@@ -115,14 +120,13 @@ SOFT_RESET:
     call timer_init
     call pot_init
     call keypad_init
+    call pwm_init
 
 
 START_SCREEN:
     lcd_printstr "2121 16s1"
     lcd_set_line 1
     lcd_printstr "Safe Cracker"
-
-
 
 START_SCREEN_wait:
     ; wait until the game has been started
@@ -305,19 +309,64 @@ FIND_CODE_SCREEN_end:
     inc8 RoundNum           ; increment the round number
     lds r16, RoundNum
     cpi r16, MAX_ROUNDS
-    brge TEST_TEST
+    brge ENTER_CODE_SCREEN
     jmp RESET_POT_SCREEN
 
-TEST_TEST:
-    lcd_clear
-    ;lcd_print8 RandNums+2
-    ;lcd_set_line_1
-    ;load_Z RandNums
-    ;lcd_print16 zh, zl
-    lcd_printstr "rekt"
-    lcd_print8 r18
-    rjmp HALT
+ENTER_CODE_SCREEN:
+    clear8 KeypadCurval
+    clear8 KeypadUpdates
+    rcall keypad_getkey
+    rcall keypad_getval
 
+ENTER_CODE_SCREEN_reset:
+    lcd_clear
+    lcd_printstr "Enter Code"
+    lcd_set_line_1
+    clr r20
+
+ENTER_CODE_SCREEN_loop:
+    ; retrieve random number for round number in r20
+    mov r16, r20
+    load_Z RandNums
+    add zl, r16
+    clr r16
+    adc zh, r16
+    ld r17, Z
+
+    rcall keypad_getkey
+    rcall keypad_getval
+    cp r18, r17
+    breq ENTER_CODE_SCREEN_correct
+
+    cpi r18, 0
+    breq ENTER_CODE_SCREEN_loop
+
+    ; incorrect digit entered
+    ; start code screen again
+    rjmp ENTER_CODE_SCREEN_reset
+
+ENTER_CODE_SCREEN_correct:
+    inc r20
+    lcd_printstr "*"
+
+    cpi r20, MAX_ROUNDS
+    brge GAME_COMPLETE_SCREEN
+    jmp ENTER_CODE_SCREEN_loop
+
+GAME_COMPLETE_SCREEN:
+    lcd_clear
+    lcd_printstr "Game complete"
+    lcd_set_line 1
+    lcd_printstr "You Win!"
+
+    ; set LoseState to True
+    inc8 LoseState
+
+GAME_COMPLETE_SCREEN_loop:
+    ;ldi r16, STROBE_LIGHT
+    ;out PORTA, r16
+    rcall pwm_start
+    ;rjmp GAME_COMPLETE_SCREEN_loop
 
 
 TIMEOUT_SCREEN:

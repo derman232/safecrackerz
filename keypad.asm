@@ -11,6 +11,9 @@
 .equ BL_ONLY = 0b00001000
 .equ MOT_AND_BL = 0b00011000
 
+.equ MOTOR = 0b00000100     ; motor on PG1
+.equ MOTOR_CLEAR = 0b11111011     ; motor on PG1
+
 .def row = r16 
 .def col = r17 
 .def rmask = r18 
@@ -28,9 +31,6 @@ keypad_init:
     ldi r16, PORTLDIR   ; PB7:4/PB3:0, out/in
     sts DDRL, r16
 
-    ser r16             ; PORTC is output
-    out DDRC, r16
-    out PORTC, r16
     pop r16
     ret
 
@@ -125,9 +125,6 @@ keypad_getkey_convert_end:
     ldi r22, 1
     sts KeypadUpdates, r22
 
-    ser r23             ; PORTC is output
-    out PORTC, r23
-
 keypad_getkey_end:
     pop r22
     pop temp2
@@ -152,9 +149,6 @@ keypad_getval:
         clr r23
         lds r23, PINL                 ; Read PORTL
         andi r23, ROWMASK             ; Get the keypad output value
-
-        clr r22
-        out PORTC, r22                ; Write value to PORTC
 
         cpi r23, ROWMASK               ; Check if any row is low
         brne keypad_getval_debouncer
@@ -203,12 +197,17 @@ keypad_getval_motor:
         lds r22, KeypadCurval
         cp r17, r22
         brne_long kepad_getval_motor_debouncer_continue
-        ldi r22, MOT_AND_BL           ; turn on the motor
-        out PORTE, r22
+
+    clr r22
+    in r22, PORTG
+    ori r22, MOTOR  
+    out PORTG, r22
+
+
+    ;    ldi r22, MOTOR                ; turn on the motor
+    ;    out PORTG, r22
 
         load_val16_X TimerCounter2   ; check if motor has been on for one second
-        lcd_clear
-        lcd_print16 xh, xl
         cpi XL, LOW(ONE_SEC_16*1)
         ldi r18, HIGH(ONE_SEC_16*1)
         cpc XH, r18
@@ -228,8 +227,10 @@ keypad_getval_motor:
         ldi r18, 1
 
 keypad_getval_motor_end:
-    ldi r22, BL_ONLY                    ; stop motor
-    out PORTE, r22
+    in r22, PORTG
+    andi r22, MOTOR_CLEAR
+    ;ldi r22, BL_ONLY                    ; stop motor
+    out PORTG, r22
 
     pop xl
     pop xh
