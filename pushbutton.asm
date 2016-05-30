@@ -26,15 +26,17 @@ pushbutton_left:
     cpi r16, 1
     breq RESET_GAME
 
-    ; test if game is ongoing
-    load_val8_reg r16, StartedState
-    cpi r16, 1
-    breq pushbutton_left_end
+    ; set game as started
+    ldi r16, 1
+    sts StartedState, r16
+    ;inc8 StartedState
+    ;cpi r16, 1
+    ;breq pushbutton_left_end
 
     ; go to start countdown
-    rjmp START_COUNTDOWN_SCREEN
+    ;rjmp START_COUNTDOWN_SCREEN
 
-    rjmp pushbutton_left_end
+    ;rjmp pushbutton_left_end
 
     pushbutton_left_end:
         pop r16

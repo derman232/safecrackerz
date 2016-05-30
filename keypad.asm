@@ -42,7 +42,7 @@ keypad_getkey:
     push temp1
     push temp2
     push r22
-    cli     ; disable interrupts whilst keypad is doing its thing
+    ;cli     ; disable interrupts whilst keypad is doing its thing
     ;rcall sleep_5ms
     ;rcall sleep_5ms
 
@@ -125,6 +125,28 @@ keypad_getkey_convert_end:
     ldi r22, 1
     sts KeypadUpdates, r22
 
+    ser r23             ; PORTC is output
+    out PORTC, r23
+
+keypad_getkey_end:
+    pop r22
+    pop temp2
+    pop temp1
+    pop cmask
+    pop rmask
+    pop col
+    pop row
+    ;sei
+    ret
+
+keypad_getval:
+    push r23
+    push r22
+
+    lds r18, KeypadUpdates
+    cpi r18, 0
+    breq keypad_getval_end
+
     ; wait for all keypad buttons to be high
     keypad_getkey_debouncer:
         clr r23
@@ -137,31 +159,14 @@ keypad_getkey_convert_end:
         cpi r23, ROWMASK               ; Check if any row is low
         brne keypad_getkey_debouncer
 
-    ser r23             ; PORTC is output
-    out PORTC, r23
-
-keypad_getkey_end:
-    pop r22
-    pop temp2
-    pop temp1
-    pop cmask
-    pop rmask
-    pop col
-    pop row
-    sei
-    ret
-
-keypad_getval:
-    lds r18, KeypadUpdates
-    cpi r18, 0
-    breq keypad_getval_end
-
     clr r18
     sts KeypadUpdates, r18
     lds r18, KeypadCurval
 
 
 keypad_getval_end:
+    pop r22
+    pop r23
     ret
 
 

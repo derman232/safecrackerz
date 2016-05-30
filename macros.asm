@@ -138,3 +138,10 @@ FALSE:
     rjmp @0
 FALSE:
 .endmacro
+
+
+.macro brge_long
+    brlt FALSE
+    rjmp @0
+FALSE:
+.endmacro

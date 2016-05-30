@@ -24,8 +24,8 @@ timer0_interrupt:                  ; interrupt subroutine for Timer0
         push r16
         push XH
         push XL
-;        in r16, SREG
-;        push r16
+        in r16, SREG
+        push r16
 
     random_num:
         inc8 RandomNum8
@@ -74,8 +74,8 @@ timer0_interrupt:                  ; interrupt subroutine for Timer0
         clear16 LeftBtnCounter
 
     timer0_epilogue:
-;        pop r16
-;        out SREG, r16
+        pop r16
+        out SREG, r16
         pop XL
         pop XH
         pop r16
@@ -87,8 +87,8 @@ timer1_interrupt:
         push r16
         push XH
         push XL
-;        in r16, SREG
-;        push r16
+        in r16, SREG
+        push r16
 
     timer1_main:
         inc16 TimerCounter
@@ -119,8 +119,8 @@ timer1_interrupt:
             inc8 SecondCounter
 
     timer1_epilogue:
-;        pop r16
-;        out SREG, r16
+        pop r16
+        out SREG, r16
         pop XL
         pop XH
         pop r16
@@ -142,14 +142,14 @@ timer_reset_countup:
     pop XL
     pop XH
     pop r16
-    ;ret
-    reti
+    ret
+    ;reti
 
 timer_reset_countup_2:
     clear16 TimerCounter2
 
-    ;ret
-    reti
+    ret
+    ;reti
 
 
 timer_reset_countdown:
@@ -169,7 +169,7 @@ timer_reset_countdown:
     pop XL
     pop XH
     pop r16
-    ;ret
-    reti
+    ret
+    ;reti
 
 

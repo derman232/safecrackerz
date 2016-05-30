@@ -119,24 +119,38 @@ SOFT_RESET:
 START_SCREEN:
     lcd_printstr "2121 16s1"
     lcd_set_line 1
+    lcd_printstr "Safe Cracker"
+
+START_SCREEN_wait:
+    ; wait until the game has been started
+    load_val8_reg r16, StartedState
+    cpi r16, 1
+    breq START_COUNTDOWN_SCREEN
+
+    rjmp START_SCREEN_wait
 
 ;loop_test:
 ;    rcall keypad_getkey
 ;    rcall keypad_getval
 ;    cpi r18, 0
-;    breq loop_test
-;    ;lcd_printchar_reg r16
+;    breq_long loop_test
+;    lcd_printchar_reg r18
 ;
 ;    rjmp loop_test
-
-    lcd_printstr "Safe Cracker"
-
-    rjmp HALT       ; wait for button press
+;
+;
+;    rjmp HALT       ; wait for button press
 
 START_COUNTDOWN_SCREEN:
-    load_X StartedState
-    ldi r16, 1
-    st X, r16
+    ;loop:
+    ;lcd_set_line 0
+    ;load_16 RandomNum
+    ;lcd_print16 xh, xl
+    ;jmp loop
+
+    ;load_X StartedState
+    ;ldi r16, 1
+    ;st X, r16
 
     ;inc8 StartedState   ; set game as 'Started'
 
@@ -148,6 +162,8 @@ START_COUNTDOWN_SCREEN:
     rcall timer_reset_countdown
 
 START_COUNTDOWN_SCREEN_loop:
+
+
     ; check countdown 
     load_val8_reg r16, SecondCounter
     cpi r16, 0
@@ -178,7 +194,7 @@ RESET_POT_SCREEN_loop:
     ; check countdown 
     load_val8_reg r16, SecondCounter
     cpi r16, 0
-    breq RESET_POT_SCREEN_exit
+    breq_long TIMEOUT_SCREEN
 
     lcd_printstr "Remaining : "
     lcd_print8 r16
@@ -201,19 +217,16 @@ RESET_POT_SCREEN_wait:
     cpi XL, LOW(ONE_SEC_16*0.5)
     ldi r16, HIGH(ONE_SEC_16*0.5)
     cpc XH, r16
-    breq FIND_POT_SCREEN
+    brlt_long RESET_POT_SCREEN_loop
 
-    rjmp RESET_POT_SCREEN_loop
-
-RESET_POT_SCREEN_exit:
-    jmp TIMEOUT_SCREEN
+    rjmp FIND_POT_SCREEN
 
 FIND_POT_SCREEN:
     ; counter for checking whether pot is at target for 1sec
     rcall timer_reset_countup_2
 
-    lcd_clear
-    lcd_printstr "Find POT Pos"
+    lcd_set_line 0
+    lcd_printstr "Find POT Pos  "
     lcd_set_line_1
     load_val16_X RandomNum
     store16_X FindPotNum
@@ -258,9 +271,9 @@ FIND_POT_SCREEN_wait:
     cpi XL, LOW(ONE_SEC_16*1)
     ldi r18, HIGH(ONE_SEC_16*1)
     cpc XH, r18
-    breq FIND_CODE_SCREEN
+    brlt_long FIND_POT_SCREEN_loop
 
-    jmp FIND_POT_SCREEN_loop
+    jmp FIND_CODE_SCREEN
 
 FIND_CODE_SCREEN:
     rcall lightbar_clear
@@ -270,7 +283,7 @@ FIND_CODE_SCREEN:
     lcd_set_line 1
     lcd_printstr "Scan for number"
 
-    ;rcall set_rand_char
+    rcall set_rand_char
     lcd_set_line 1
 
     rjmp FIND_CODE_SCREEN_loop
