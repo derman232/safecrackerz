@@ -198,6 +198,7 @@ RESET_POT_SCREEN_loop:
 
     lcd_printstr "Remaining : "
     lcd_print8 r16
+    lcd_printstr " "
     lcd_set_line_1
 
     ; check pot is zero
