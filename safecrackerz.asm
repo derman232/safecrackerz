@@ -2,7 +2,7 @@
 ;http://www.avrfreaks.net/forum/tutasmcode-morons-guide-avr-adc
 
 .equ SCREEN_TIMEOUT_START = 1
-.equ SCREEN_TIMEOUT = 19
+.equ SCREEN_TIMEOUT = 20
 .equ MAX_ROUNDS = 2
 .equ STROBE_LIGHT = 0b00000010
 
@@ -121,6 +121,7 @@ START_SCREEN:
     lcd_set_line 1
     lcd_printstr "Safe Cracker"
 
+
 START_SCREEN_wait:
     ; wait until the game has been started
     load_val8_reg r16, StartedState
@@ -158,6 +159,7 @@ START_COUNTDOWN_SCREEN:
     lcd_clear
     lcd_printstr "2121 16s1"
     lcd_set_line 1
+    rcall speaker500         ; beep to start
     
 
     ldi r16, SCREEN_TIMEOUT_START
@@ -357,14 +359,15 @@ GAME_COMPLETE_SCREEN:
     lcd_set_line 1
     lcd_printstr "You Win!"
 
+    rcall speaker1000
+    rcall pwm_end_game_start
     ; set LoseState to True
     inc8 LoseState
 
 GAME_COMPLETE_SCREEN_loop:
     ;ldi r16, STROBE_LIGHT
     ;out PORTA, r16
-    rcall pwm_end_game_start
-    ;rjmp GAME_COMPLETE_SCREEN_loop
+    rjmp GAME_COMPLETE_SCREEN_loop
 
 
 TIMEOUT_SCREEN:
@@ -374,6 +377,7 @@ TIMEOUT_SCREEN:
     lcd_set_line 1
     lcd_printstr "You Lose!"
 
+    rcall speaker1000
     ; set LoseState to True
     inc8 LoseState
 

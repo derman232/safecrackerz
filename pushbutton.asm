@@ -29,7 +29,6 @@ pushbutton_left:
     ; set game as started
     ldi r16, 1
     sts StartedState, r16
-    rcall speaker500        ; beep to start
 
     pushbutton_left_end:
         pop r16
