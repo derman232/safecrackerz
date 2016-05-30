@@ -359,10 +359,11 @@ GAME_COMPLETE_SCREEN:
     lcd_set_line 1
     lcd_printstr "You Win!"
 
-    rcall speaker1000
-    rcall pwm_end_game_start
     ; set LoseState to True
     inc8 LoseState
+
+    rcall speaker1000
+    rcall pwm_end_game_start
 
 GAME_COMPLETE_SCREEN_loop:
     ;ldi r16, STROBE_LIGHT
