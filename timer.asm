@@ -1,5 +1,5 @@
 .set DEBOUNCE_TIME = 780*5    ; ~150milliseconds
-.set ONE_SEC_16 = 30
+.set ONE_SEC_16 = 30*0.8      ; Adjusted for things (beeping)
 .set MAX_RAND = 1024
 
 timer_init:
@@ -118,6 +118,8 @@ timer1_interrupt:
 
         ; increment or decrement counter, per counter direction
         load_val8_reg r16, CounterDirection
+        cpi r16, 2
+        breq timer1_epilogue        ; timer off
         cpi r16, 0
         breq timer1_countUP
         timer1_countDOWN:
@@ -176,6 +178,26 @@ timer_reset_countdown:
 
     ; set counter to count DOWN
     ldi r16, 1
+    load_X CounterDirection
+    st X, r16
+
+    pop XL
+    pop XH
+    pop r16
+    ret
+    ;reti
+
+timer_off:
+    push r16
+    push XH
+    push XL
+
+    clear16 TimerCounter
+    load_X SecondCounter
+    st X, r16
+
+    ; set counter to stop counting
+    ldi r16, 2
     load_X CounterDirection
     st X, r16
 

@@ -196,6 +196,7 @@ RESET_POT_SCREEN_loop:
     cpi r16, 0
     breq_long TIMEOUT_SCREEN
 
+    RESET_POT_SCREEN_loop_continue:
     lcd_printstr "Remaining : "
     lcd_print8 r16
     lcd_printstr " "
@@ -277,6 +278,7 @@ FIND_POT_SCREEN_wait:
     jmp FIND_CODE_SCREEN
 
 FIND_CODE_SCREEN:
+    rcall timer_off
     rcall lightbar_clear
     lcd_clear
 
@@ -364,6 +366,7 @@ GAME_COMPLETE_SCREEN_loop:
 
 
 TIMEOUT_SCREEN:
+    rcall timer_off
     lcd_clear
     lcd_printstr "Game over"
     lcd_set_line 1

@@ -26,4 +26,23 @@ speaker250:
         ret
 
 
+speaker500:
+    push r16
+
+	clr r16 										; initialise keypress counter
+	speaker500_loop:
+		inc r16
+		cpi r16, 255
+		breq speaker500_end
+
+		sbi PORTB, 0  								; make sound
+		rcall sleep_1ms
+		cbi PORTB, 0
+		rcall sleep_1ms
+		rjmp speaker500_loop
+
+    speaker500_end:
+        pop r16
+        ret
+
 
