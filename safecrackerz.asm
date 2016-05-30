@@ -1,9 +1,9 @@
 .include "m2560def.inc"
 ;http://www.avrfreaks.net/forum/tutasmcode-morons-guide-avr-adc
 
-.equ SCREEN_TIMEOUT_START = 1
+.equ SCREEN_TIMEOUT_START = 3
 .equ SCREEN_TIMEOUT = 20
-.equ MAX_ROUNDS = 2
+.equ MAX_ROUNDS = 3
 .equ STROBE_LIGHT = 0b00000010
 
 ; global vars
