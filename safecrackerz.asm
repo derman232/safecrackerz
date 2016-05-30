@@ -121,6 +121,8 @@ START_SCREEN:
     lcd_set_line 1
     lcd_printstr "Safe Cracker"
 
+
+
 START_SCREEN_wait:
     ; wait until the game has been started
     load_val8_reg r16, StartedState
@@ -286,14 +288,16 @@ FIND_CODE_SCREEN:
     rcall set_rand_char
     lcd_set_line 1
 
+    rcall timer_reset_countup_2     ; restart the timer 
+
     rjmp FIND_CODE_SCREEN_loop
 
 FIND_CODE_SCREEN_loop:
     rcall keypad_getkey
-    rcall keypad_getval
-    cpi r18, 0
-    breq FIND_CODE_SCREEN_loop
-    lcd_printchar_reg r18
+    rcall keypad_getval_motor
+    cpi r18, 1
+    breq TEST_TEST
+    ;lcd_printchar_reg r18
 
     rjmp FIND_CODE_SCREEN_loop
 

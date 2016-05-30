@@ -145,3 +145,9 @@ FALSE:
     rjmp @0
 FALSE:
 .endmacro
+
+.macro brne_long
+    breq FALSE
+    rjmp @0
+FALSE:
+.endmacro

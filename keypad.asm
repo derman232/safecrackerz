@@ -148,7 +148,7 @@ keypad_getval:
     breq keypad_getval_end
 
     ; wait for all keypad buttons to be high
-    keypad_getkey_debouncer:
+    keypad_getval_debouncer:
         clr r23
         lds r23, PINL                 ; Read PORTL
         andi r23, ROWMASK             ; Get the keypad output value
@@ -157,7 +157,7 @@ keypad_getval:
         out PORTC, r22                ; Write value to PORTC
 
         cpi r23, ROWMASK               ; Check if any row is low
-        brne keypad_getkey_debouncer
+        brne keypad_getval_debouncer
 
     clr r18
     sts KeypadUpdates, r18
@@ -169,8 +169,122 @@ keypad_getval_end:
     pop r23
     ret
 
+; returns 1 in r18 if the correct button
+; has been held for one second
+keypad_getval_motor:
+    push r23
+    push r22
+    push zh
+    push zl
+    push r16
+    push r17
+    push xh
+    push xl
+
+    lds r18, KeypadUpdates
+    cpi r18, 0
+    breq_long keypad_getval_motor_false
+
+    ; wait for all keypad buttons to be high
+    keypad_getval_motor_debouncer:
+
+        clr r23
+        lds r23, PINL                 ; Read PORTL
+        andi r23, ROWMASK             ; Get the keypad output value
+
+        ; retrieve random number for this round
+        load_Z RandNums
+        lds r16, RoundNum
+        add zl, r16
+        clr r16
+        adc zh, r16
+        ld r17, Z
+
+        lds r22, KeypadCurval
+        cp r17, r22
+        brne_long kepad_getval_motor_debouncer_continue
+        ldi r22, MOT_AND_BL           ; turn on the motor
+        out PORTE, r22
+
+        load_val16_X TimerCounter2   ; check if motor has been on for one second
+        lcd_clear
+        lcd_print16 xh, xl
+        cpi XL, LOW(ONE_SEC_16*1)
+        ldi r18, HIGH(ONE_SEC_16*1)
+        cpc XH, r18
+        brge_long keypad_getval_motor_true
+
+        kepad_getval_motor_debouncer_continue:
+        cpi r23, ROWMASK               ; Check if any row is low
+        brne_long keypad_getval_motor_debouncer
+
+    keypad_getval_motor_false:
+        clr r18
+        sts KeypadUpdates, r18
+        rcall timer_reset_countup_2     ; restart the timer if released
+        rjmp keypad_getval_motor_end
+
+    keypad_getval_motor_true:
+        ldi r18, 1
+
+keypad_getval_motor_end:
+    ldi r22, BL_ONLY                    ; stop motor
+    out PORTE, r22
+
+    pop xl
+    pop xh
+    pop r17
+    pop r16
+    pop zl
+    pop zh
+    pop r22
+    pop r23
+    ret
 
 
+set_rand_char:
+    push r16
+    push r17
+	push zh
+	push zl
+	
+    lds r16, RandomNum8
+    ldi r17, 16
+    rcall Divide
+
+	ldi zh, HIGH(CharacterMap<<1)
+	ldi zl, LOW(CharacterMap<<1)
+	add zl, r16
+	clr r16
+	adc zh, r16
+
+	lpm r17, z
+
+    ; store result in RandNums + RoundNum
+    load_Z RandNums
+    lds r16, RoundNum
+	add zl, r16
+	clr r16
+	adc zh, r16
+    st Z, r17
+
+    lcd_set_line 0
+    lcd_printchar_reg r17
+
+	
+set_rand_char_end:
+    pop zl
+	pop zh
+	pop r17
+	pop r16
+	ret
+
+.undef row
+.undef col
+.undef rmask
+.undef cmask
+.undef temp1 
+.undef temp2
 
 
 
@@ -392,47 +506,4 @@ keypad_getval_end:
 ;    clr r16
 ;    reti
 
-set_rand_char:
-    push r16
-    push r17
-	push zh
-	push zl
-	
-    lds r16, RandomNum8
-    ldi r17, 16
-    rcall Divide
-
-	ldi zh, HIGH(CharacterMap<<1)
-	ldi zl, LOW(CharacterMap<<1)
-	add zl, r16
-	clr r16
-	adc zh, r16
-
-	lpm r17, z
-
-    ; store result in RandNums + RoundNum
-    load_Z RandNums
-    lds r16, RoundNum
-	add zl, r16
-	clr r16
-	adc zh, r16
-    st Z, r17
-
-    lcd_set_line 0
-    lcd_printchar_reg r17
-
-	
-set_rand_char_end:
-    pop zl
-	pop zh
-	pop r17
-	pop r16
-	ret
-
-.undef row
-.undef col
-.undef rmask
-.undef cmask
-.undef temp1 
-.undef temp2
 
