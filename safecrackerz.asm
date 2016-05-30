@@ -72,6 +72,7 @@ CharacterMap: .db "0123456789*#ABCD"
 .include "lightbar.asm"
 .include "keypad.asm"
 .include "pwm.asm"
+.include "speaker.asm"
 
 RESET:
     ; clear variables
@@ -112,6 +113,7 @@ SOFT_RESET:
     call pot_init
     call keypad_init
     call pwm_init
+    call speaker_init
 
 
 START_SCREEN:

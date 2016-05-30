@@ -53,9 +53,10 @@ pushbutton_right:
     push r16
 
     ; test if game is over and reset
-    rcall check_game_over
-    cpi r16, 1
-    breq RESET_GAME
+    ;rcall check_game_over
+    ;cpi r16, 1
+    ;breq RESET_GAME
+    jmp RESET_GAME
 
     pop r16
     out SREG, r16

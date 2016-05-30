@@ -90,6 +90,14 @@ timer1_interrupt:
         in r16, SREG
         push r16
 
+
+    ser r16
+    out PORTD, r16
+    rcall sleep_5ms
+    clr r16
+    out PORTD, r16
+
+
     timer1_main:
         inc16 TimerCounter
         inc16 TimerCounter2
@@ -114,6 +122,11 @@ timer1_interrupt:
         breq timer1_countUP
         timer1_countDOWN:
             dec8 SecondCounter
+            lds r16, SecondCounter
+            cpi r16, 0
+            brlt timer1_epilogue
+
+            rcall speaker250
             rjmp timer1_epilogue
         timer1_countUP:
             inc8 SecondCounter
