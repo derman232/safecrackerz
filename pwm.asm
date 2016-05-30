@@ -22,8 +22,6 @@ pwm_init:
 
 	ldi temp, (1 << CS30) 		; set the Timer3 to Phase Correct PWM mode, *no prescaling*
 	sts TCCR3B, temp
-	;ldi temp, (1 << WGM31)|(1<< WGM30)|(1<<COM3B1)|(1<<COM3A1)		; Set Phase Correct PWM, 10bit, Clear OC0A on Compare Match when up-counting. Set OC0A on Compare Match when down-counting
-	;sts TCCR3A, temp
 	ldi temp, (1<< WGM30)|(1<<COM3B1)|(0<<COM3A1)		
 	sts TCCR3A, temp
 
@@ -31,12 +29,18 @@ pwm_init:
     pop temp 
     ret
 
-pwm_start:
+pwm_end_game_start:
     clr temp
 	sts OCR3BL, temp
 	sts OCR3BH, temp
 
     duller:	
+        ; if keypad pressed, reset
+        rcall keypad_getkey
+        rcall keypad_getval
+        cpi r18, 0
+        brne_long SOFT_RESET
+
         dec brightness
 
         sts OCR3BL, brightness
@@ -49,6 +53,12 @@ pwm_start:
         brne duller
 
     brighter:
+        ; if keypad pressed, reset
+        rcall keypad_getkey
+        rcall keypad_getval
+        cpi r18, 0
+        brne_long SOFT_RESET
+
         inc brightness
 
         sts OCR3BL, brightness 		; connected to PE2 (internally PE4 per datasheet)

@@ -88,6 +88,7 @@ SOFT_RESET:
     ldi r16, high(RAMEND)
     out SPH, r16
 
+    ; init variables
     clear8 SecondCounter
     clear8 CounterDirection
     clear8 LoseState
@@ -102,19 +103,9 @@ SOFT_RESET:
     clear8 KeypadCurval
     clear8 KeypadUpdates
 
-    clr r16
-    clr r17
-
-    ; TODO move to function
-    ser r16
-    out DDRC, r16           ; set LED bar
-    out DDRG, r16           ; set LED bar
-
-    ;ldi r16, 0b00000100
-    ;out PORTG, r16
-
     ; init devices
     call lcd_init
+    call lightbar_init
     call pushbutton_init
     call interrupt_init
     call timer_init
@@ -365,7 +356,7 @@ GAME_COMPLETE_SCREEN:
 GAME_COMPLETE_SCREEN_loop:
     ;ldi r16, STROBE_LIGHT
     ;out PORTA, r16
-    rcall pwm_start
+    rcall pwm_end_game_start
     ;rjmp GAME_COMPLETE_SCREEN_loop
 
 
@@ -379,6 +370,11 @@ TIMEOUT_SCREEN:
     inc8 LoseState
 
 TIMEOUT_SCREEN_loop:
+    rcall keypad_getkey
+    rcall keypad_getval
+    cpi r18, 0
+    brne_long SOFT_RESET
+
     rjmp TIMEOUT_SCREEN_loop
     
 HALT:
