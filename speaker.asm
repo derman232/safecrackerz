@@ -12,7 +12,7 @@ speaker250:
 	clr r16 										; initialise keypress counter
 	speaker250_loop:
 		inc r16
-		cpi r16, 124
+		cpi r16, 127
 		breq speaker250_end
 
 		sbi PORTB, 0  								; make sound

@@ -29,14 +29,7 @@ pushbutton_left:
     ; set game as started
     ldi r16, 1
     sts StartedState, r16
-    ;inc8 StartedState
-    ;cpi r16, 1
-    ;breq pushbutton_left_end
-
-    ; go to start countdown
-    ;rjmp START_COUNTDOWN_SCREEN
-
-    ;rjmp pushbutton_left_end
+    rcall speaker500        ; beep to start
 
     pushbutton_left_end:
         pop r16

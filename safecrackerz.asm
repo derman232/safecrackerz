@@ -154,9 +154,11 @@ START_COUNTDOWN_SCREEN:
 
     ;inc8 StartedState   ; set game as 'Started'
 
+
     lcd_clear
     lcd_printstr "2121 16s1"
     lcd_set_line 1
+    
 
     ldi r16, SCREEN_TIMEOUT_START
     rcall timer_reset_countdown
