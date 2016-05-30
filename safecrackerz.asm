@@ -3,6 +3,7 @@
 
 .equ SCREEN_TIMEOUT_START = 1
 .equ SCREEN_TIMEOUT = 19
+.equ MAX_ROUNDS = 3
 
 ; global vars
 .dseg
@@ -296,18 +297,28 @@ FIND_CODE_SCREEN_loop:
     rcall keypad_getkey
     rcall keypad_getval_motor
     cpi r18, 1
-    breq TEST_TEST
-    ;lcd_printchar_reg r18
+    breq_long FIND_CODE_SCREEN_end
 
     rjmp FIND_CODE_SCREEN_loop
 
+FIND_CODE_SCREEN_end:
+    inc8 RoundNum           ; increment the round number
+    lds r16, RoundNum
+    cpi r16, MAX_ROUNDS
+    brge TEST_TEST
+    jmp RESET_POT_SCREEN
 
 TEST_TEST:
     lcd_clear
+    ;lcd_print8 RandNums+2
+    ;lcd_set_line_1
+    ;load_Z RandNums
+    ;lcd_print16 zh, zl
     lcd_printstr "rekt"
-    lcd_set_line_1
     lcd_print8 r18
     rjmp HALT
+
+
 
 TIMEOUT_SCREEN:
     lcd_clear
