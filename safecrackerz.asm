@@ -3,7 +3,6 @@
 
 .equ SCREEN_TIMEOUT_START = 3
 .equ DEFAULT_DIFFICULTY = 20
-.equ SCREEN_TIMEOUT = 20
 .equ MAX_ROUNDS = 3
 .equ STROBE_LIGHT = 0b00000010
 
@@ -228,7 +227,6 @@ START_COUNTDOWN_SCREEN_loop:
     rjmp START_COUNTDOWN_SCREEN_loop
 
 RESET_POT_SCREEN:
-    ;ldi r16, SCREEN_TIMEOUT
     lds r16, DifficultyCountdown
     rcall timer_reset_countdown
 RESET_POT_SCREEN_softreset:
