@@ -2,6 +2,7 @@
 ;http://www.avrfreaks.net/forum/tutasmcode-morons-guide-avr-adc
 
 .equ SCREEN_TIMEOUT_START = 3
+.equ DEFAULT_DIFFICULTY = 20
 .equ SCREEN_TIMEOUT = 20
 .equ MAX_ROUNDS = 3
 .equ STROBE_LIGHT = 0b00000010
@@ -43,6 +44,8 @@ KeypadCurval:
 KeypadUpdates:
     .byte 1
 RandChar:
+    .byte 1
+DifficultyCountdown:            ; the timeout on pot screen in seconds
     .byte 1
 
 
@@ -103,6 +106,9 @@ SOFT_RESET:
     clear16 FindPotNum
     clear8 KeypadCurval
     clear8 KeypadUpdates
+
+    ldi r16, DEFAULT_DIFFICULTY
+    sts DifficultyCountdown, r16
 
     ; init devices
     call lcd_init
@@ -181,7 +187,8 @@ START_COUNTDOWN_SCREEN_loop:
     rjmp START_COUNTDOWN_SCREEN_loop
 
 RESET_POT_SCREEN:
-    ldi r16, SCREEN_TIMEOUT
+    ;ldi r16, SCREEN_TIMEOUT
+    lds r16, DifficultyCountdown
     rcall timer_reset_countdown
 RESET_POT_SCREEN_softreset:
     rcall lightbar_clear
