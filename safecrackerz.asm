@@ -129,6 +129,8 @@ START_SCREEN:
 
 
 START_SCREEN_wait:
+    rcall START_SCREEN_set_difficulty   ; adjust difficulty
+
     ; wait until the game has been started
     load_val8_reg r16, StartedState
     cpi r16, 1
@@ -136,6 +138,45 @@ START_SCREEN_wait:
 
     rjmp START_SCREEN_wait
 
+START_SCREEN_set_difficulty:
+    push r18
+    push r16
+
+    rcall keypad_getkey
+    rcall keypad_getval
+    cpi r18, 'A'
+    breq START_SCREEN_set_difficulty_A
+    cpi r18, 'B'
+    breq START_SCREEN_set_difficulty_B
+    cpi r18, 'C'
+    breq START_SCREEN_set_difficulty_C
+    cpi r18, 'D'
+    breq START_SCREEN_set_difficulty_D
+
+    rjmp START_SCREEN_set_difficulty_skipend
+
+    START_SCREEN_set_difficulty_A:
+        ldi r16, 20
+        rjmp START_SCREEN_set_difficulty_end
+    START_SCREEN_set_difficulty_B:
+        ldi r16, 15
+        rjmp START_SCREEN_set_difficulty_end
+    START_SCREEN_set_difficulty_C:
+        ldi r16, 10
+        rjmp START_SCREEN_set_difficulty_end
+    START_SCREEN_set_difficulty_D:
+        ldi r16, 6
+        rjmp START_SCREEN_set_difficulty_end
+
+    START_SCREEN_set_difficulty_end:
+        sts DifficultyCountdown, r16
+        lcd_set_cursor 1, 15
+        lcd_printchar_reg r18
+    START_SCREEN_set_difficulty_skipend:
+        pop r16
+        pop r18
+        reti
+    
 ;loop_test:
 ;    rcall keypad_getkey
 ;    rcall keypad_getval
