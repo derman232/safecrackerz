@@ -34,7 +34,7 @@ LoseState:                      ; Boolean to determine if game is lost
 StartedState:                   ; Boolean to determine if game has been started
     .byte 1
 RandNums:                       ; random number for each round
-    .byte 10
+    .byte MAX_ROUNDS
 RoundNum:                       ; Current round
     .byte 1
 KeypadCurval:

@@ -125,7 +125,6 @@ keypad_getkey_end:
     pop rmask
     pop col
     pop row
-    ;sei
     ret
 
 keypad_getval:
