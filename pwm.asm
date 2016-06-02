@@ -11,8 +11,6 @@
 pwm_init:
     push temp
     push brightness
-	;ldi temp, 0b00010000 		; set PE4 (connected to PE2...) (OC3A) to output
-	;out DDRE, temp
 
     clr temp
 	sts OCR3BL, temp
@@ -45,8 +43,6 @@ pwm_end_game_start:
 
         sts OCR3BL, brightness
 
-        //clr r20
-        //lcd_write_number r20, brightness
         rcall sleep_5ms
 
         cpi brightness, 0 			; if brightness = 0 start increasing brightness

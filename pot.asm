@@ -1,3 +1,5 @@
+;http://www.avrfreaks.net/forum/tutasmcode-morons-guide-avr-adc
+
 pot_init:
     push r16
 
@@ -14,8 +16,6 @@ pot_init:
     ret
 
 
-; reads ADCL and ADCH and stores
-; the result in r25:r24
 pot_read:
     push r16
     clr r16
@@ -35,16 +35,6 @@ pot_read:
     pop r16
     ret
 
-;    cpi r16, 0
-;    ldi r16, 0
-;    cpc r17, r16
-;    breq CLEAR
-;
-;    ;lcd_print8 r18
-;    ;lcd_set_line 0
-;    rjmp INTERRUPT
-
-; paramters: X, contins the target pot reading
 FIND_POT_SCREEN_readpot:
     push xh
     push xl
@@ -52,17 +42,9 @@ FIND_POT_SCREEN_readpot:
     push yl
 
     rcall pot_read
+
     ; store the difference between the desired value and current POT value
-
     movw Y, r25:r24
-
-    ; current pot pos
-    ;lcd_print16 yh, yl
-    ;lcd_printstr " "
-    ; target pot pos
-    ;lcd_print16 xh, xl
-    ;lcd_printstr " "
-    ;lcd_set_line 0
 
     sub Xl, yl
     sbc Xh, yh
@@ -75,37 +57,14 @@ FIND_POT_SCREEN_readpot:
     ; if the result is negative, exit
     ldi r18, -1
     rjmp FIND_POT_SCREEN_readpot_end
-    ;com yl
-    ;com yh
-    ;subi yl, -1
-    ;sbci yh, -1
 
     FIND_POT_SCREEN_positive:
-    ; distance to target
-    ;lcd_set_line_1
-    ;lcd_print16 yh, yl
-    ; lcd_set_line_1
-    ;lcd_print16 yh, yl
-    ;lcd_printstr "  "
-
-    ; move the result into Y
-    ; and divide the result by 16
     load_Z 16
     movw Y, X
     rcall Divide16
 
-   ; lcd_clear
-   ; lcd_print16 yh, yl
-   ; jmp halt
-
     ; store the result in r18
     mov r18, yl
-
-    ; lcd_clear
-    ; lcd_print8 r18
-    ; lcd_printstr "    "
-    ; lcd_print8 yl
-    ; jmp halt
 
 
 FIND_POT_SCREEN_readpot_end:

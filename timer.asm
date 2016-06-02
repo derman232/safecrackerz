@@ -102,12 +102,6 @@ timer1_interrupt:
         inc16 TimerCounter
         inc16 TimerCounter2
 
-        ;lds XL, TimerCounter2
-        ;lds XH, TimerCounter2+1
-        ;load_val16_X TimerCounter2
-        ;adiw x, 1
-        ;store16_X TimerCounter2
-
         load_16 TimerCounter
         cpi XL, low(ONE_SEC_16)
         ldi r16, high(ONE_SEC_16)
@@ -158,13 +152,11 @@ timer_reset_countup:
     pop XH
     pop r16
     ret
-    ;reti
 
 timer_reset_countup_2:
     clear16 TimerCounter2
 
     ret
-    ;reti
 
 
 timer_reset_countdown:
@@ -185,7 +177,6 @@ timer_reset_countdown:
     pop XH
     pop r16
     ret
-    ;reti
 
 timer_off:
     push r16
@@ -205,6 +196,5 @@ timer_off:
     pop XH
     pop r16
     ret
-    ;reti
 
 

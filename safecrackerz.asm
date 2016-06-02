@@ -1,5 +1,4 @@
 .include "m2560def.inc"
-;http://www.avrfreaks.net/forum/tutasmcode-morons-guide-avr-adc
 
 .equ SCREEN_TIMEOUT_START = 3
 .equ DEFAULT_DIFFICULTY = 20
@@ -176,32 +175,7 @@ START_SCREEN_set_difficulty:
         pop r18
         reti
     
-;loop_test:
-;    rcall keypad_getkey
-;    rcall keypad_getval
-;    cpi r18, 0
-;    breq_long loop_test
-;    lcd_printchar_reg r18
-;
-;    rjmp loop_test
-;
-;
-;    rjmp HALT       ; wait for button press
-
 START_COUNTDOWN_SCREEN:
-    ;loop:
-    ;lcd_set_line 0
-    ;load_16 RandomNum
-    ;lcd_print16 xh, xl
-    ;jmp loop
-
-    ;load_X StartedState
-    ;ldi r16, 1
-    ;st X, r16
-
-    ;inc8 StartedState   ; set game as 'Started'
-
-
     lcd_clear
     lcd_printstr "2121 16s1"
     lcd_set_line 1
@@ -405,15 +379,12 @@ GAME_COMPLETE_SCREEN:
     lcd_set_line 1
     lcd_printstr "You Win!"
 
-    ; set LoseState to True
     inc8 LoseState
 
     rcall speaker1000
     rcall pwm_end_game_start
 
 GAME_COMPLETE_SCREEN_loop:
-    ;ldi r16, STROBE_LIGHT
-    ;out PORTA, r16
     rjmp GAME_COMPLETE_SCREEN_loop
 
 
